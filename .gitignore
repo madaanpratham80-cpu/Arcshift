@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.local/
+.DS_Store
+**/graphify-out/cache/
+graphify-out/.graphify_*
+
+# Local reference material and dated graph backups
+/AI_Career_Agent_*.pdf
+/CASEY_Public_*.pdf
+/docs/references/
+/graphify-out/20??-??-??/
