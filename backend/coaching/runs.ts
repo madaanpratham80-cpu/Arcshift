@@ -330,10 +330,13 @@ export function createCoachingRuns(
     }
   }
 
-  async function claimWork(kind: JobKind, ai: AiClient, signal: AbortSignal) {
+  async function claimWork(
+    kind: JobKind, ai: AiClient, signal: AbortSignal,
+    target?: { _id: ObjectId } | { userId: ObjectId; conversationId: ObjectId },
+  ) {
     const now = new Date();
     const run = await runs.findOneAndUpdate(
-      { kind, active: true, availableAt: { $lte: now } },
+      { ...target, kind, active: true, availableAt: { $lte: now } },
       claimLease(ai.leaseMs(kind === 'coach_turn' ? 4 : 2), now), { sort: { availableAt: 1, _id: 1 }, returnDocument: 'after' },
     );
     if (!run) return undefined;

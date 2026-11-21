@@ -136,10 +136,10 @@ export function createRoadmapRuns(database: MongoDatabase, store: RoadmapStore) 
     }
   }
 
-  function claim(leaseMs: number) {
+  function claim(leaseMs: number, id?: ObjectId) {
     const now = new Date();
     return runs.findOneAndUpdate(
-      { kind, active: true, availableAt: { $lte: now } },
+      { kind, active: true, availableAt: { $lte: now }, ...(id ? { _id: id } : {}) },
       claimLease(leaseMs, now), { sort: { availableAt: 1, _id: 1 }, returnDocument: 'after' },
     );
   }
@@ -198,8 +198,8 @@ export function createRoadmapRuns(database: MongoDatabase, store: RoadmapStore) 
     }
   }
 
-  async function claimWork(ai: AiClient, signal: AbortSignal) {
-    const run = await claim(ai.leaseMs(2));
+  async function claimWork(ai: AiClient, signal: AbortSignal, id?: ObjectId) {
+    const run = await claim(ai.leaseMs(2), id);
     return run ? () => processRun(run, ai, signal) : undefined;
   }
 

@@ -1,3 +1,4 @@
+import type { RunDispatch } from './worker.ts';
 import express from 'express';
 import { ObjectId } from 'mongodb';
 import type { AuthConfig } from '../auth/config.ts';
@@ -14,6 +15,7 @@ function runNotFound() {
 
 export function createAiRunRouter(
   database: MongoDatabase, auth: AuthConfig, roadmaps: RoadmapRuns, coaching: CoachingRuns, generationEnabled: boolean,
+  dispatch?: RunDispatch,
 ) {
   const router = express.Router();
   const sessions = createSessionManager(database.db, auth);
@@ -34,11 +36,13 @@ export function createAiRunRouter(
     const id = new ObjectId(request.params.id);
     const roadmap = await roadmaps.get(owner, id);
     if (roadmap) {
+      dispatch?.(roadmap);
       response.json({ data: publicRun(roadmap) });
       return;
     }
     const coach = await coaching.get(owner, id);
     if (!coach) throw runNotFound();
+    dispatch?.(coach);
     response.json({ data: publicCoachRun(coach) });
   });
 
@@ -47,10 +51,14 @@ export function createAiRunRouter(
     const owner: ObjectId = response.locals.runOwner;
     const id = new ObjectId(request.params.id);
     if (await roadmaps.get(owner, id)) {
-      response.status(202).json({ data: publicRun(await roadmaps.retry(owner, id, generationEnabled)) });
+      const run = await roadmaps.retry(owner, id, generationEnabled);
+      dispatch?.(run);
+      response.status(202).json({ data: publicRun(run) });
       return;
     }
-    response.status(202).json({ data: publicCoachRun(await coaching.retry(owner, id, generationEnabled)) });
+    const run = await coaching.retry(owner, id, generationEnabled);
+    dispatch?.(run);
+    response.status(202).json({ data: publicCoachRun(run) });
   });
 
   return router;

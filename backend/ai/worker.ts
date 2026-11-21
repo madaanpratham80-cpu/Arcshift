@@ -5,6 +5,13 @@ import type { MongoDatabase } from '../db/mongo.ts';
 
 type WorkSource = (signal: AbortSignal) => Promise<(() => Promise<void>) | undefined>;
 
+export type WorkScheduler = (work: (signal: AbortSignal) => Promise<void>) => void;
+type AvailableRun = { _id: ObjectId; active: boolean; availableAt: Date };
+export type RunDispatch = (target: (AvailableRun & (
+  { kind: 'initial_roadmap' } |
+  { kind: 'coach_turn'; userId: ObjectId; conversationId: ObjectId }
+)) | { kind: 'session_summary'; userId: ObjectId; conversationId: ObjectId }) => void;
+
 export interface LeasedJob<Kind extends string = string> {
   _id: ObjectId;
   userId: ObjectId;

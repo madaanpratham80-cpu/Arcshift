@@ -13,3 +13,7 @@ graphify-out/.graphify_*
 /CASEY_Public_*.pdf
 /docs/references/
 /graphify-out/20??-??-??/
+
+# Vercel links and generated hosting assets
+/.vercel/
+/public/assets/

@@ -61,3 +61,27 @@ Integration and browser tests start isolated databases and use provider fixtures
 - [Backend release runbook](docs/backend-release.md)
 - [OpenSpec requirements](openspec/specs) and [change history](openspec/changes)
 - [Graphify report](graphify-out/GRAPH_REPORT.md)
+
+## Deploy to Vercel
+
+Import this repository into a Vercel project. Use the Express framework preset and Node.js 24. The checked-in `vercel.json` runs `npm run build:vercel`, which compiles Express and React, bundles the HTML with the function, and publishes hashed assets to the CDN.
+
+Set these variables in the Vercel **Production** environment.
+
+| Variable | Value |
+| --- | --- |
+| `APP_ORIGIN` | The public application origin, for example `https://your-project.vercel.app` |
+| `JWT_SIGNING_KEY` | A fresh, private base64url signing key. Generate one with `node -p "require('node:crypto').randomBytes(32).toString('base64url')"` |
+| `MONGODB_URI` | The connection string for a hosted MongoDB replica set or sharded cluster, such as MongoDB Atlas |
+| `MONGODB_DB` | A dedicated application database such as `arcshift` |
+| `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` | Optional. The Google OAuth Web application credentials |
+| `ARCSHIFT_ADMIN_EMAIL` | Optional. The one verified Gmail account allowed into the admin area. Requires Google sign-in |
+| `AI_PROVIDER` and `GROQ_API_KEY` | Optional. Set the provider to `groq` and add a private Groq key for roadmap generation and coaching. The Model Studio configuration above also works |
+
+Give the database user permission to create indexes and read and write the application database. Configure database network access for the deployment. Store secret values in Vercel's environment settings.
+
+Register `https://your-project.vercel.app/api/auth/google/callback` on the Google OAuth client when enabling Google sign-in. Substitute your actual production domain for the example. A preview needs its own matching origin and OAuth redirect if you enable Google there.
+
+After deploying, check `/healthz` and `/readyz`. Both should return HTTP 200. Open `/login` directly, then check sign-in, the dashboard, and a sample roadmap and coaching reply with AI configured. The Vercel runtime starts AI work on authenticated requests and lets an eligible poll reclaim an interrupted job once its lease expires. Opening a conversation also lets pending conversation summaries resume. The local runtime continuously polls for work.
+
+To repeat the browser test against Vercel's local build output, run `vercel build` in a linked checkout, then run `ARCSHIFT_TEST_VERCEL=1 node --test test/web.e2e.js`. The test supplies its own MongoDB replica set and mock model.

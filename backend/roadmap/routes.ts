@@ -1,3 +1,4 @@
+import type { RunDispatch } from '../ai/worker.ts';
 import express from 'express';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
@@ -41,6 +42,7 @@ export function createRoadmapRouter(
   runs: RoadmapRuns,
   proposals: RoadmapProposals,
   generationEnabled: boolean,
+  dispatch?: RunDispatch,
 ) {
   const router = express.Router();
   const sessions = createSessionManager(database.db, auth);
@@ -80,6 +82,7 @@ export function createRoadmapRouter(
     const key = requireIdempotencyKey(request);
     const input = validate(generationSchema, request.body);
     const run = await runs.enqueue(response.locals.roadmapOwner, input.expectedProfileVersion, key, generationEnabled);
+    dispatch?.(run);
     response.status(202).json({ data: publicRun(run) });
   });
 

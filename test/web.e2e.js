@@ -10,6 +10,7 @@ import { MongoClient } from 'mongodb';
 import { chromium } from 'playwright';
 import { getLoopbackPort, startProcess, stopProcess, waitForStatus } from './support/processes.js';
 
+const vercel = process.env.ARCSHIFT_TEST_VERCEL === '1';
 const email = 'career-workspace@example.test';
 const password = 'synthetic browser test password';
 const coachMessage = 'Can we add deployment practice?\nI can study on weekends.';
@@ -94,7 +95,8 @@ test('browser journey from signup through an approved revision and session resto
     await bootstrap.close();
   }
 
-  api = await startProcess(process.execPath, ['dist/server.js'], { env: {
+  const entry = vercel ? 'test/support/vercel-server.js' : 'dist/server.js';
+  api = await startProcess(process.execPath, [entry], { env: {
     ...process.env, NODE_ENV: 'test', HOST: '127.0.0.1', PORT: String(port),
     APP_ORIGIN: origin, JWT_SIGNING_KEY: randomBytes(32).toString('base64url'),
     MONGODB_URI: uri + '/?replicaSet=webTest', MONGODB_DB: 'web_end_to_end',

@@ -1,3 +1,4 @@
+import type { RunDispatch } from '../ai/worker.ts';
 import express from 'express';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
@@ -44,6 +45,7 @@ function listCursor(value: string | undefined) {
 
 export function createConversationRouter(
   database: MongoDatabase, auth: AuthConfig, store: ConversationStore, runs: CoachingRuns, generationEnabled: boolean,
+  dispatch?: RunDispatch,
 ) {
   const router = express.Router();
   const sessions = createSessionManager(database.db, auth);
@@ -74,10 +76,11 @@ export function createConversationRouter(
   router.get(['/:id', '/:id/messages'], async (request, response) => {
     if (!isObjectId(request.params.id)) throw conversationNotFound();
     const query = parse(historySchema, request.query);
-    const result = await store.history(
-      response.locals.conversationOwner, new ObjectId(request.params.id), query.cursor, query.limit ?? 30,
-    );
+    const userId: ObjectId = response.locals.conversationOwner;
+    const conversationId = new ObjectId(request.params.id);
+    const result = await store.history(userId, conversationId, query.cursor, query.limit ?? 30);
     if (!result) throw conversationNotFound();
+    dispatch?.({ kind: 'session_summary', userId, conversationId });
     response.json({ data: { conversation: result.conversation, messages: result.messages }, nextCursor: result.nextCursor });
   });
 
@@ -88,6 +91,7 @@ export function createConversationRouter(
     const run = await runs.send(
       response.locals.conversationOwner, new ObjectId(request.params.id), key, text, generationEnabled,
     );
+    dispatch?.(run);
     response.status(202).json({ data: publicCoachRun(run) });
   });
 

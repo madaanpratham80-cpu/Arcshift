@@ -96,6 +96,11 @@ export function createMongoDatabase(env: NodeJS.ProcessEnv) {
     throw new Error('MONGODB_URI must be a valid MongoDB connection string.');
   }
 
+  if (env.VERCEL === '1' && client.options.hosts.some(({ host, socketPath }) =>
+    socketPath || host === 'localhost' || host === '::1' || host?.startsWith('127.'))) {
+    throw new Error('Vercel requires a hosted MongoDB deployment.');
+  }
+
   const db = client.db(dbName, { readPreference: 'primary', writeConcern: { w: 'majority' } });
   let indexesReady = false;
   let reportedFailure = false;

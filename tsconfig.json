@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2024",
     "module": "NodeNext",
-    "rootDir": "api",
+    "rootDir": "backend",
     "outDir": "dist",
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
@@ -10,5 +10,5 @@
     "strict": true,
     "noEmitOnError": true
   },
-  "include": ["api/**/*.ts"]
+  "include": ["backend/**/*.ts"]
 }

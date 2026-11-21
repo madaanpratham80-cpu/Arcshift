@@ -23,10 +23,12 @@ const handleUnexpectedError: ErrorRequestHandler = (error, _request, response, n
   sendApiError(response, 500, 'INTERNAL_ERROR', 'Something went wrong. Try again.');
 };
 
+export type WebBuild = { root: string } | { html: string };
+
 export function createApp(
   apiRoutes = express.Router(),
   checkReadiness = async () => false,
-  webRoot?: string,
+  web?: WebBuild,
 ) {
   const app = express();
 
@@ -57,20 +59,26 @@ export function createApp(
     sendApiError(response, 404, 'NOT_FOUND', 'This resource is unavailable.');
   });
 
-  if (webRoot) {
-    app.use('/assets', express.static(join(webRoot, 'assets'), { index: false, immutable: true, maxAge: '1y' }));
+  if (web) {
+    if ('root' in web) {
+      app.use('/assets', express.static(join(web.root, 'assets'), { index: false, immutable: true, maxAge: '1y' }));
+    }
     const webRoutes = [
       '/', '/login', '/signup', '/terms', '/admin', '/onboarding', '/app',
       '/app/coach{/:id}', '/app/history', '/app/settings', '/app/versions{/:version}', '/app/proposals/:id',
     ];
-    const indexPath = join(webRoot, 'index.html');
-    function webPage(status: number): express.RequestHandler {
+    const webPage = (status: number): express.RequestHandler => {
       return (_request, response, next) => {
-        response.status(status).sendFile(indexPath, { headers: { 'Cache-Control': 'no-cache' } }, (error) => {
+        response.status(status).set('Cache-Control', 'no-cache');
+        if ('html' in web) {
+          response.type('html').send(web.html);
+          return;
+        }
+        response.sendFile(join(web.root, 'index.html'), (error) => {
           if (error) next(error);
         });
       };
-    }
+    };
     app.get(webRoutes, webPage(200));
     const notFound = webPage(404);
     app.get('/{*path}', (request, response, next) => {
