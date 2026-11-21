@@ -16,4 +16,5 @@ graphify-out/.graphify_*
 
 # Vercel links and generated hosting assets
 /.vercel/
-/public/assets/
+/public/
+/dist/web-document.js
