@@ -318,9 +318,9 @@
     "semantic_hash": ""
   },
   "backend/app.ts": {
-    "mtime": 1795285957.0000262,
-    "seen": 1795285965.264689,
-    "ast_hash": "e430618401e904880f30b6d3444cce1e",
+    "mtime": 1795286072.1900408,
+    "seen": 1795286081.401261,
+    "ast_hash": "ed3a623e48971c62f7251bb9054314a8",
     "semantic_hash": ""
   },
   "backend/auth/config.ts": {
@@ -444,9 +444,9 @@
     "semantic_hash": ""
   },
   "backend/server.ts": {
-    "mtime": 1795285928.2415304,
-    "seen": 1795285965.264699,
-    "ast_hash": "919a96153ea81bc4a70af571b3cf255f",
+    "mtime": 1795286072.1901546,
+    "seen": 1795286081.401275,
+    "ast_hash": "5479c503cf0e30dfd21d281ee1fcf388",
     "semantic_hash": ""
   },
   "index.js": {

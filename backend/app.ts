@@ -23,7 +23,7 @@ const handleUnexpectedError: ErrorRequestHandler = (error, _request, response, n
   sendApiError(response, 500, 'INTERNAL_ERROR', 'Something went wrong. Try again.');
 };
 
-export type WebBuild = { root: string } | { html: string };
+export type WebBuild = string | { html: string };
 
 export function createApp(
   apiRoutes = express.Router(),
@@ -60,8 +60,8 @@ export function createApp(
   });
 
   if (web) {
-    if ('root' in web) {
-      app.use('/assets', express.static(join(web.root, 'assets'), { index: false, immutable: true, maxAge: '1y' }));
+    if (typeof web === 'string') {
+      app.use('/assets', express.static(join(web, 'assets'), { index: false, immutable: true, maxAge: '1y' }));
     }
     const webRoutes = [
       '/', '/login', '/signup', '/terms', '/admin', '/onboarding', '/app',
@@ -70,11 +70,11 @@ export function createApp(
     const webPage = (status: number): express.RequestHandler => {
       return (_request, response, next) => {
         response.status(status).set('Cache-Control', 'no-cache');
-        if ('html' in web) {
+        if (typeof web !== 'string') {
           response.type('html').send(web.html);
           return;
         }
-        response.sendFile(join(web.root, 'index.html'), (error) => {
+        response.sendFile(join(web, 'index.html'), (error) => {
           if (error) next(error);
         });
       };

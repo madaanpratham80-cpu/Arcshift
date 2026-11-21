@@ -17,7 +17,7 @@ function startServer() {
   const hasWebBuild = existsSync(new URL('../dist/web/index.html', import.meta.url));
   let runtime: ReturnType<typeof createRuntime>;
   try {
-    runtime = createRuntime(process.env, hasWebBuild ? { root: webRoot } : undefined);
+    runtime = createRuntime(process.env, hasWebBuild ? webRoot : undefined);
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'API configuration is invalid.');
     process.exitCode = 1;
